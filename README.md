@@ -4,7 +4,7 @@
 
 A template for making software tutorial videos with AI coding agents such as Claude Code or Codex and [Remotion](https://www.remotion.dev/).
 
-The repository includes a working demo and a reusable production workflow. It does not include the original tutorial's product assets, account details, or private conversations. Companion article (Chinese): [Making Video Tutorials with AI](https://blog.cosine.ren/post/ai-assisted-tutorial-workflow).
+The repository includes a working demo and a reusable production workflow. It does not include the original tutorial's product assets, account details, or private conversations. Companion article (Chinese): [Making Video Tutorials with Claude Code and Codex: A Production Retrospective](https://blog.cosine.ren/post/ai-assisted-tutorial-workflow).
 
 All scripts, feedback, IDs, and prompts are generic examples. The demo's episode count, duration, and configuration do not describe the original tutorial.
 
