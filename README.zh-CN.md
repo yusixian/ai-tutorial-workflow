@@ -4,7 +4,7 @@
 
 用 AI coding agent（Claude Code、Codex 这类）加 [Remotion](https://www.remotion.dev/) 做长篇、分集的软件教程视频的模板。
 
-这里提供的是可复用的制作流程和演示工程，不包含原教程的产品素材、账号信息或原始对话。配套文章：[和 AI 一起做视频教程](https://blog.cosine.ren/post/ai-assisted-tutorial-workflow)。
+这里提供的是可复用的制作流程和演示工程，不包含原教程的产品素材、账号信息或原始对话。配套文章：[用 Claude Code 和 Codex 做视频教程：从小样到成片的制作复盘](https://blog.cosine.ren/post/ai-assisted-tutorial-workflow)。
 
 文档里的台词、反馈、编号和提示词均为通用示例，不对应实际视频片段。示例工程的集数、时长和配置也不代表原教程。
 
