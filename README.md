@@ -1,89 +1,95 @@
 # ai-tutorial-workflow
 
-用 AI coding agent（Claude Code、Codex 这类）加 [Remotion](https://www.remotion.dev/) 做长篇、分集的软件教程视频的模板。
+**English** · [简体中文](README.zh-CN.md)
 
-这里提供的是可复用的制作流程和演示工程，不包含原教程的产品素材、账号信息或原始对话。配套文章：[和 AI 一起做视频教程](https://blog.cosine.ren/post/ai-assisted-tutorial-workflow)。
+A template for making software tutorial videos with AI coding agents such as Claude Code or Codex and [Remotion](https://www.remotion.dev/).
 
-文档里的台词、反馈、编号和提示词均为通用示例，不对应实际视频片段。示例工程的集数、时长和配置也不代表原教程。
+The repository includes a working demo and a reusable production workflow. It does not include the original tutorial's product assets, account details, or private conversations. Companion article (Chinese): [Making Video Tutorials with AI](https://blog.cosine.ren/post/ai-assisted-tutorial-workflow).
 
-## 里面有什么
+All scripts, feedback, IDs, and prompts are generic examples. The demo's episode count, duration, and configuration do not describe the original tutorial.
 
-| 目录 | 内容 |
+## What's included
+
+| Directory | Contents |
 | --- | --- |
-| [`video/`](video/) | 能跑的 Remotion 工程，带两集示例：台词数据、Edge 配音和缓存、按配音时长算的时间轴、字幕对齐、镜头和聚光框、响度归一、交付检查、逐字稿（本地版和飞书版）、B 站投稿文案、提词稿 |
-| [`tts-lab/audition/`](tts-lab/audition/) | TTS 试听台：把多个引擎念的同一批句子做成并排试听页，统一响度，还能打包成单个 HTML 发给别人 |
-| [`prompts/`](prompts/) | 起手、改片、逐字稿、配音、交接、发布各阶段的提示词 |
-| [`templates/`](templates/) | `GOAL.md`、`HANDOFF.md`、`COORDINATION.md` 模板 |
-| [`docs/`](docs/) | 流程和踩过的坑：[工作流](docs/workflow.md)、[逐字稿](docs/transcript.md)、[读音修正](docs/pronunciation.md)、[TTS 选型](docs/tts-selection.md)、[渲染提速](docs/render-performance.md)、[多会话协作](docs/multi-agent.md)、[发布清单](docs/publishing.md) |
+| [`video/`](video/) | A runnable Remotion project with two demo episodes: line-by-line scripts, Edge TTS and caching, an audio-driven timeline, aligned captions, camera moves and spotlights, loudness normalization, delivery checks, local and Feishu transcripts, Bilibili publishing copy, and prompter scripts |
+| [`tts-lab/audition/`](tts-lab/audition/) | A TTS comparison page for listening to the same sentences across engines, with normalized loudness and an option to export a single HTML file with embedded audio |
+| [`prompts/`](prompts/) | Prompts for starting a project, revising footage, reviewing transcripts, working on narration, handing off work, and publishing |
+| [`templates/`](templates/) | Templates for `GOAL.md`, `HANDOFF.md`, and `COORDINATION.md` |
+| [`docs/`](docs/) | Workflow notes (Chinese): [production workflow](docs/workflow.md), [transcripts](docs/transcript.md), [pronunciation](docs/pronunciation.md), [TTS selection](docs/tts-selection.md), [render performance](docs/render-performance.md), [multi-agent coordination](docs/multi-agent.md), and [publishing](docs/publishing.md) |
 
-## 核心思路
+The supporting docs, prompts, and templates are currently in Chinese. This README covers setup and customization in English.
 
-**台词是唯一的数据源，其他东西都从它算出来。**
+## How it works
+
+**The script is the source of truth. Everything else is derived from it.**
 
 ```text
-video/src/script/ep*.ts ──► pnpm tts ──► tts-manifest.json（每句时长 + 逐词时间戳）
-        │                                      │
+video/src/script/ep*.ts ──► pnpm tts ──► tts-manifest.json
+        │                              (line durations + word timestamps)
         └──────────────► timeline.ts ◄─────────┘
                               │
-        ┌─────────────┬───────┴──────┬──────────────┬──────────────┐
-        ▼             ▼              ▼              ▼              ▼
-   Remotion 分集   字幕切块     顶栏和章节进度   投稿章节目录     逐字稿时间码
+                              ├──► Remotion episodes
+                              ├──► Caption chunks
+                              ├──► Header and chapter progress
+                              ├──► Publishing chapter timestamps
+                              └──► Transcript timecodes
 ```
 
-- 每句台词有全系列唯一的 `id`；`text` 是字幕，`tts` 是和字幕不同时的念法。
-- 配完音，每句的时长决定场景长度；改一句台词，后面所有时间码自动跟着变。
-- 场景组件用 `useScene()` 拿到每句的起止帧，用 `cueTextFrame()` 找到某个词念到的那一帧，画面跟着口播走。
+- Each line has an `id` that is unique across the series. `text` is the caption; `tts` provides a different spoken form when needed.
+- Narration duration determines scene length. Change a line and the following timecodes update automatically.
+- Scene components use `useScene()` to get each line's start and end frames. `cueTextFrame()` finds the frame when a word is spoken, so visuals can follow the narration.
 
-## 快速开始
+## Quick start
 
-需要：Node 22+、pnpm 10、ffmpeg 5.1 以上（逐字稿截图用到 `-fps_mode`；试听台要带 libmp3lame）、[uv](https://docs.astral.sh/uv/)（跑 edge-tts）、ImageMagick 7 的 `magick`（逐字稿拼图）。画面用系统字体，macOS 自带苹方；想在不同机器上出一样的画面，装上 Noto Sans SC。第一次渲染时 Remotion 会自动下载 Chrome Headless Shell（约 94 MB）。
+You need Node 22+, pnpm 10, ffmpeg 5.1+ (`-fps_mode` is used for transcript screenshots; the audition tool also needs libmp3lame), [uv](https://docs.astral.sh/uv/) to run edge-tts, and ImageMagick 7's `magick` for transcript contact sheets. The project uses system fonts: macOS includes PingFang; install Noto Sans SC for consistent output across machines. Remotion downloads Chrome Headless Shell on the first render.
 
 ```sh
 git clone https://github.com/yusixian/ai-tutorial-workflow.git
 cd ai-tutorial-workflow/video
-pnpm install                   # 装依赖，顺带用代码合成示例音效和配乐（pnpm sfx）
-pnpm typecheck && pnpm test    # 类型检查；字幕切块和时间轴的单元测试
-pnpm studio                    # 在 Remotion Studio 里预览
-pnpm timing ep1                # 打印每个场景、每句话的时间码
-pnpm tts                       # 用 Edge TTS 给示例台词配音（会把示例台词发给微软的服务）
+pnpm install                   # Install dependencies and generate demo sound effects/music
+pnpm typecheck && pnpm test    # Check types; test captions and the timeline
+pnpm studio                    # Preview in Remotion Studio
+pnpm timing ep1                # Print scene and line timecodes
+pnpm tts                       # Generate narration with Edge TTS; sends demo text to Microsoft
 pnpm delivery-check --timing-only
-pnpm render --concurrency 4    # 渲染全部分集 → out/raw/<ep>.mp4，也可以只写 ep1 ep2
-pnpm finalize                  # 两遍 loudnorm 到 -15 LUFS → out/<ep>.mp4
-pnpm compilation               # 按顺序拼成合集 → out/compilation.mp4
-pnpm delivery-check            # 帧数、编码、色彩、音画时长、完整解码
-pnpm covers                    # 封面 → out/covers/
-pnpm transcript                # 逐字稿和每句截图 → transcript/
-pnpm publish-kit               # 投稿文案 → publish/
-pnpm prompter                  # 提词稿 → voice/（加 --pdf 用本机 Chrome 出 PDF）
-pnpm transcript:lark push      # 可选：推送飞书逐字稿，需要先登录 lark-cli
+pnpm render --concurrency 4    # Render all episodes to out/raw/<ep>.mp4; or select ep1 ep2
+pnpm finalize                  # Two-pass loudnorm to -15 LUFS; writes out/<ep>.mp4
+pnpm compilation               # Join episodes in order into out/compilation.mp4
+pnpm delivery-check            # Check frames, encoding, color, audio/video duration, decoding
+pnpm covers                    # Write covers to out/covers/
+pnpm transcript                # Write transcripts and line screenshots to transcript/
+pnpm publish-kit               # Write publishing copy to publish/
+pnpm prompter                  # Write prompter scripts to voice/; --pdf uses local Chrome
+pnpm transcript:lark push      # Optional: push a Feishu transcript; sign in to lark-cli first
 ```
 
-不跑 `pnpm tts` 也能预览和渲染，时间轴会按阅读速度估算每句时长，只是没有声音。`pnpm render` 会先检查清单里登记过的配音、配乐和音效文件，缺了会提示该跑什么命令；还没配音的句子会渲成无声，终端会提醒。配音音频不进 git，克隆下来的清单是空的 `{}`。
+You can preview and render before running `pnpm tts`. Lines without narration are silent and timed by estimated reading speed. Before rendering, the script checks audio files registered in the manifests and tells you which command to run if any are missing. It also warns about lines without narration. Narration audio is not committed to Git; a fresh clone starts with an empty `{}` narration manifest.
 
-试听台：
+To try the audition tool, run these commands from the repository root:
 
 ```sh
 cd tts-lab/audition
-python3 demo_clips.py          # 用 Edge TTS 以两种语速生成两个示例「引擎」
-python3 build_page.py --pack   # page/index.html，加 --pack 再出一个内嵌音频的单文件 HTML
+python3 demo_clips.py          # Generate two demo "engines" using Edge TTS at different speeds
+python3 build_page.py --pack   # Write page/index.html and a standalone HTML with embedded audio
 ```
 
-换成自己的候选引擎：复制 `audition.example.json` 为 `audition.json`，写好句子、要听的点和每个引擎的音频目录，把各引擎念好的 `<句子 id>.wav` 放进去再运行。
+To compare your own engines, copy `audition.example.json` to `audition.json`. Set the sentences, listening notes, and audio directories, place each engine's `<sentence-id>.wav` files in its directory, then build the page.
 
-## 换成自己的内容
+## Use your own content
 
-1. `video/src/config.ts`：系列名、版本标记、语言、飞书逐字稿的标题。
-2. `video/src/script/`：照着 `ep1.ts` 写自己的分集，在 `episodes.ts` 里登记。
-3. `video/src/scenes/`：每个场景一个组件，在该集的 `index.ts` 里按场景 id 注册（逐字稿读这个文件，找出每个场景由哪个组件、哪个文件负责），再把注册表加进 `src/episode/entries.ts`（Remotion 合成用）。界面演示照着 `scenes/ep1/app.tsx` 用 JSX 画一个假的页面，控件坐标写成常量，给镜头、光标和聚光框用。
-4. `video/scripts/spoken-text.ts`：你的多音字和缩写读法。
-5. `video/scripts/kits.ts`：投稿标题、简介、标签、链接（示例是 `example.com` 占位，没换完之前 `pnpm publish-kit` 会在发布检查里提醒）。
-6. `video/src/script/music.ts`：配乐文件和署名。示例配乐是代码合成的，换成有授权的曲子放进 `public/audio/bgm/`（这个目录默认不进 git，多数曲库不允许再分发）。
-7. 用 [`prompts/01-kickoff.md`](prompts/01-kickoff.md) 的提示词起手，让 agent 先写需求文档和 `GOAL.md`。
+1. `video/src/config.ts`: set the series name, version label, language, and Feishu transcript title.
+2. `video/src/script/`: use `ep1.ts` as a starting point for your episodes and register them in `episodes.ts`.
+3. `video/src/scenes/`: create one component per scene and register it by scene ID in the episode's `index.ts`. The transcript exporter reads that registry to identify the component and source file for each scene. Add the registry to `src/episode/entries.ts` for Remotion compositions. For UI demos, follow `scenes/ep1/app.tsx`: build a mock interface in JSX and define control coordinates as constants for camera moves, cursors, and spotlights.
+4. `video/scripts/spoken-text.ts`: add pronunciation rules for ambiguous words and abbreviations.
+5. `video/scripts/kits.ts`: replace publishing titles, descriptions, tags, and links. The example uses `example.com` placeholders; `pnpm publish-kit` warns about any that remain.
+6. `video/src/script/music.ts`: set music files and credits. The demo music is generated in code. Put licensed tracks in `public/audio/bgm/`, which is ignored by Git because many music libraries do not allow redistribution.
+7. Start with [`prompts/01-kickoff.md`](prompts/01-kickoff.md) and ask your agent to write the requirements and `GOAL.md` first.
 
-## 许可
+## License
 
-本仓库的代码和文档使用 [MIT](LICENSE)。
+The code and documentation in this repository are licensed under [MIT](LICENSE).
 
-依赖的 Remotion 有自己的许可证，不是 MIT：个人（包括商用）、雇员不超过 3 人的营利性组织、非营利组织可以免费用；人数按整个组织算，大公司里的三人小组也不算。其他营利性组织需要购买公司授权，见 [Remotion 许可证说明](https://www.remotion.dev/docs/license/faq)。
+Remotion has a separate license. Individuals (including commercial use), for-profit organizations with up to three people, and nonprofits can use it for free. The headcount applies to the whole organization; a three-person team within a larger company does not qualify on its own. Other for-profit organizations need a Company License. See the [Remotion license FAQ](https://www.remotion.dev/docs/license/faq) for the full eligibility rules.
 
-示例里没有第三方素材，音效和配乐都是代码合成的。你自己放进去的图片、音乐、字体和声音，按它们各自的授权使用；配音用了谁的声音、用的哪家 TTS，也要看对应的条款（见 [TTS 选型](docs/tts-selection.md#授权和标注)）。
+The demo includes no third-party assets; its sound effects and music are generated in code. Images, music, fonts, and voices you add remain subject to their own licenses. Check the terms for your voice and TTS provider as well; see [TTS selection](docs/tts-selection.md#授权和标注) (Chinese).
